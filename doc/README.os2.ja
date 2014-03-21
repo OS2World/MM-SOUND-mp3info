@@ -1,0 +1,70 @@
+  terminfoデータベースやその設定によっては、mp3infoのインタラクティブ・
+モードの枠線が半角カナに化けてしまうことがあります。
+  このメモは、その対処法にのみ言及しています。
+  mp3infoの使い方に関しては、README.os2やmp3info.txtなどの文書をご覧くだ
+さい。
+
+
+○ mp3infoをインタラクティブ・モードで使う時のメモ
+
+  枠線が化けない“日本語terminfoデータ”の作成方法を、実際に私が作業した
+内容を例に採って説明します。
+
+  まず、terminfoデータベースのソースコードを作成します。これは、termcap
+データから captoinfo (termcap→terminfo変換)ユーティリティを使って簡単に
+生成できます。termcapデータは、emxのランタイムのパッケージに含まれていま
+す。また、captoinfoユーティリティは、ncursesパッケージと共に配布されてい
+ます。これらのパッケージのダウンロード・サイトは、README.OS2を参照してく
+ださい。
+  captoinfoが読み取るtermcapデータのテキスト・ファイルは、unix形式、すな
+わち、行が LFコードのみで終端していなければなりません。OS/2やDOSのテキス
+ト・ファイルは CR/LFで終端しており、captoinfoが誤動作します。captoinfoを
+実行する前に、textpack、あるいは、fixcrlf、fromdosなどのユーティリティで、
+行末をunix形式に変換しておきましょう。
+
+	textpack -r- /emx/etc/termcap.dat
+	captoinfo -I /emx/etc/termcap.dat > terminfo.src
+
+  textpackは、このメモの最終行に記載のURIの私のホームページで最新版を公
+開しています。fixcrlfは、XFree86のXbinパッケージをインストールしてあれば、
+/XFree86/lib/X11/etc/fixcrlf.exeに展開されます。これらの行末調整のユーティ
+リティや captoinfoの使い方の詳細は、それぞれのドキュメントをご覧ください。
+
+  次に、terminfo.srcを編集します。
+
+	ansi|ANSI.SYS color,
+		cols#80, it#8, lines#25,
+			 (中略)
+		smul=\E[1;31;43m,
+		acsc=f\337q\006m\003j\004l\001k\002x\005,    ← 1行追加
+	window|ANSI.SYS window,
+		cols#80, it#8, lines#25,
+			(以下略)
+
+  この追加で、ansiや terminfo.srcの中に use=ansiの指定があるTERM設定で日
+本語コードページ用の枠線定義をしています。TERM設定をmono系にしている場合
+には、terminfo.srcの monoターミナル定義の部分にも同じ1行を書き加えておき
+ましょう。
+  xtermや kterm、rxvt、etermなどのターミナル・エミュレータの多くは、枠線
+にVT100互換のグラフィックス・キャラクタを使用できますから、それらのため
+のターミナル定義には手をつける必要はありません。
+
+  最後に、これをコンパイルしますが、その前に、テキスト・エディタが吐き出
+す修正結果の行末がDOS形式だとコンパイラが誤動作する可能性がありますから、
+念のため CRコードを取り除きます。そしてコンパイルには、ticユーティリティ
+を使います。ticユーティリティもncursesパッケージに含まれています。
+
+	textpack -r- termcap.src
+	tic termcap.src
+
+  ticの使い方や、その入力ソースの書式の詳細は ncursesのドキュメントを参
+照してください。OS/2用のバイナリには manページや htmlが含まれていないよ
+うですので、ソース・パッケージも必要ならダウンロードしてください。なお、
+captinfoやticは“-h”オプションで stderrに簡単なヘルプ・メッセージを表示
+してくれますから、それでことたりるかもしれません。
+
+  以上で、mp3infoのインタラクティブ・モードの枠線が化けなくなる筈です。
+Good luck!
+
+					 Altair☆ <NBG01720@nifty.ne.jp>
+			       http://www.vector.co.jp/authors/VA000199/

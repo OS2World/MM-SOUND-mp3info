@@ -1,0 +1,117 @@
+--- mp3info-0.8.2/Makefile	Sat Aug 19 00:42:22 2000
++++ mp3info-0.8.2-os2-2/Makefile	Tue Mar  6 22:57:52 2001
+@@ -45,9 +45,9 @@
+ 
+ LIBS = -lncurses
+ CC = gcc
+-CFLAGS = -g -O2 -Wall
++CFLAGS = -g -O2 -Wall -Zsmall-conv -Zexe -Zomf
+ 
+-all: mp3info gmp3info doc
++all: mp3info
+ 
+ doc: mp3info.txt
+ 
+--- mp3info-0.8.2/mp3info.c	Sat Aug 19 00:42:22 2000
++++ mp3info-0.8.2-os2-2/mp3info.c	Tue Mar  6 22:57:52 2001
+@@ -31,6 +31,9 @@
+ #include "mp3info.h"
+ #undef __MAIN
+ #include <sys/stat.h>
++#ifdef __EMX__
++#include <io.h>		/* for truncate () */
++#endif
+ 
+ char FILENAME_FORMAT_STRING[]="File: %F\n";
+ char ID3_FORMAT_STRING[]="Title:   %-30t Track: %n\nArtist:  %a\nAlbum:   %-30l Year:  %y\nComment: %-30c Genre: %g [%G]\n";
+@@ -49,6 +52,9 @@
+    int vbr_report=VBR_VARIABLE;
+    mp3info mp3;
+ 
++#ifdef __EMX__
++   _wildcard (&argc, &argv);
++#endif
+ 
+    new_tag.title[0]=new_tag.artist[0]=new_tag.album[0]=new_tag.year[0]=
+    new_tag.comment[0]=new_tag.track[0]=new_tag.genre[0]=0;
+@@ -181,7 +187,7 @@
+    for(i=optind;i < argc; i++) { /* Iterate over all filenames */
+       file_open=0;
+       if (view_only == 1) { 
+-        if ( !( fp=fopen(argv[i],"r") ) ) {
++	if ( !( fp=fopen(argv[i],"rb") ) ) {
+   	        sprintf(error_msg,"Error opening MP3: %s",argv[i]);
+                 perror(error_msg);
+ 		retcode |= 1;
+--- mp3info-0.8.2/mp3info.h	Sun Sep 24 16:12:40 2000
++++ mp3info-0.8.2-os2-2/mp3info.h	Tue Mar  6 22:57:52 2001
+@@ -26,6 +26,9 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <unistd.h>
++#ifdef __EMX__
++#include <sys/types.h>
++#endif
+ #include <sys/stat.h>
+ #include <ctype.h>
+ #include <string.h>
+@@ -34,6 +37,9 @@
+ #include "mp3tech.h"
+ #include "textfunc.h"
+ 
++#ifdef __EMX__
++#define strcasecmp stricmp
++#endif
+ 
+ #define VERSION "MP3Info 0.8.2"
+ #define COPYRIGHT "Copyright (C) 2000 Cedric Tefft"
+--- mp3info-0.8.2/mp3tech.c	Thu Sep 28 16:42:36 2000
++++ mp3info-0.8.2-os2-2/mp3tech.c	Tue Mar  6 22:57:52 2001
+@@ -29,7 +29,9 @@
+ */
+ 
+ #include "mp3info.h"
+-
++#ifdef __EMX__
++#include <sys/nls.h>
++#endif
+ 
+ int layer_tab[4]= {0, 3, 2, 1};
+ 
+@@ -270,7 +272,11 @@
+ }
+ 
+ int sameConstant(mp3header *h1, mp3header *h2) {
++#ifdef __EMX__
++    if(h1->sync == h2->sync) return 1;
++#else
+     if((*(uint*)h1) == (*(uint*)h2)) return 1;
++#endif
+ 
+     if((h1->version       == h2->version         ) &&
+        (h1->layer         == h2->layer           ) &&
+@@ -341,8 +347,24 @@
+ /* Remove trailing whitespace from the end of a string */
+ 
+ char *unpad(char *string) {
++#ifdef __EMX__
++	unsigned char*cp;
++	char*pos=NULL;
++	for(cp=string;*cp;++cp)
++	  if(*cp!=' '){
++	    if(_nls_is_dbcs_lead(*cp))
++	      if(!*++cp){	/* Oops!  Invalide DBCS */
++		cp[-1]='?';
++		return string;
++	      }
++	    pos=cp;
++	  }
++	if(pos)
++	  pos[1]=0;
++#else
+ 	char *pos=string+strlen(string)-1;
+ 	while(isspace(pos[0])) (pos--)[0]=0;
++#endif
+ 	return string;
+ }
+ 

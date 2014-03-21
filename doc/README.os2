@@ -1,0 +1,39 @@
+   This copy of the mp3info has been compiled for OS/2 systems, and it
+is requires:
+
+      * emx 0.9d FIX 02 or newer runtime.  It can be found at:
+
+		ftp://ftp.leo.org/pub/comp/os/os2/leo/gnu/emx+gcc/
+		http://hobbes.nmsu.edu/pub/os2/dev/emx/v0.9d/
+						    or its mirror sites.
+
+
+   The interactive mode requires the terminfo database.	 If you don't use
+the interactive mode, this database is not required.  You can find the
+terminfo database in the ncurses package for OS/2 at:
+
+		http://hobbes.nmsu.edu/pub/os2/dev/util/ncurses52.zip
+						    or its mirror sites.
+
+   For more information about the terminfo database, please read the
+ncurses' documents.
+
+
+   A gui version of the mp3info has not been ported.
+
+				   ---
+
+Changes:
+
+    7 Mar 2001
+
+	* Compiled with the interactive mode.
+
+
+   12 Dec 2000
+
+	* Ported for OS/2 without the interactive mode.
+
+---
+				   Kyosuke Tokoro <NBG01720@nifty.ne.jp>
+			   http://www.vector.co.jp/authors/VA000199/os2/
